@@ -174,34 +174,34 @@ typedef struct
 /**
  * @file minha-lib.h
  * @author <AUTHOR_NAME> (<AUTHOR_EMAIL>)
- * @brief BIBLIOTECA PARA [DESCRICAO DO PROPOSITO EM MAIUSCULAS]
+ * @brief Biblioteca para [descricao do proposito em sentence case]
  * @version X.Y.Z
  * @date DD-MM-YYYY
  * @copyright Copyright (c) YYYY \b <COMPANY_NAME>
  */
 
 /**
- * @brief BIBLIOTECA BASE DE CONFIGURACOES E DEFINICOES
+ * @brief Biblioteca base de configuracoes e definicoes
  */
 #include <firmware-config.h>
 
 /**
- * @brief BIBLIOTECA PARA DIVERSAS UTILIDADES
+ * @brief Biblioteca para diversas utilidades
  */
 #include <utils.h>
 
 /**
- * @brief [INCLUIR DEMAIS DEPENDENCIAS AQUI — cada uma com @brief]
+ * @brief [Incluir demais dependencias aqui — cada uma com @brief]
  */
 // #include <data-manager.h>
 
 /**
- * @brief BIBLIOTECA PARA LOGS DA MINHA LIB
+ * @brief Biblioteca para logs da minha lib
  */
 #include "log-minhaLib.h"
 
 /**
- * @brief PRINCIPAIS DEFINICOES E ESTRUTURAS DA MINHA LIB
+ * @brief Principais definicoes e estruturas da minha lib
  */
 #include "principais.h"
 
@@ -225,12 +225,12 @@ class minhaLib : public minhaLibLOG
 
   private:
     /**
-     * @brief [DESCRICAO DO MEMBRO EM MAIUSCULAS]
+     * @brief [Descricao do membro em sentence case]
      */
     dependency* _dep = nullptr;
 
     /**
-     * @brief ESTADO ATUAL DE OPERACAO
+     * @brief Estado atual de operacao
      */
     operacaoMinhaLib_e _operacao = operacaoMinhaLib_e::ESTADO_A;
 
@@ -457,9 +457,9 @@ lib_deps =
 - [ ] Todos os membros privados com prefixo `_` e `/** @brief ... */`
 - [ ] Toda funcao com Doxygen (`@brief`, `@param`, `@return \c true/false`)
 - [ ] Allman braces em todos os contextos
-- [ ] Funcoes bool com variavel local de resultado + unico `return` ao final
+- [ ] Funcoes bool: early return em guard clauses + variavel local + unico `return` na logica principal
 - [ ] `(void)` explicito em funcoes sem parametros
-- [ ] Comentarios e `@brief` em portugues, MAIUSCULAS, SEM ACENTOS
+- [ ] Doxygen em portugues, sentence case, sem acentos (`@warning` em MAIUSCULAS)
 - [ ] `library.properties` adicionado
 - [ ] `examples/BasicUsage/BasicUsage.ino` criado
 

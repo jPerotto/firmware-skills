@@ -17,7 +17,7 @@ Todo arquivo `.h` e `.cpp` comeca com este bloco — sem excecao:
 /**
  * @file nome-do-arquivo.h
  * @author <AUTHOR_NAME> (<AUTHOR_EMAIL>)
- * @brief DESCRICAO RESUMIDA EM MAIUSCULAS SEM ACENTOS
+ * @brief Descricao resumida em sentence case, sem acentos
  * @warning AVISOS IMPORTANTES (opcional)
  * @version X.Y.Z
  * @date DD-MM-YYYY
@@ -26,7 +26,8 @@ Todo arquivo `.h` e `.cpp` comeca com este bloco — sem excecao:
 ```
 
 Regras:
-- `@brief` e `@warning` sempre em **MAIUSCULAS SEM ACENTUACAO** (compatibilidade Doxygen)
+- `@brief`, `@param`, `@return`, `///<` em **sentence case, sem acentos**
+- `@warning` em **MAIUSCULAS** (destaque intencional para alertas criticos)
 - Data no formato `DD-MM-YYYY`
 - Versao alinhada com a versao do projeto
 
@@ -324,8 +325,8 @@ operationMode_e myManager::getOperationMode(void)
 ```
 
 Regras:
-- `@brief` em MAIUSCULAS SEM ACENTOS
-- `@param` em MAIUSCULAS
+- `@brief` em sentence case, sem acentos
+- `@param` em sentence case, sem acentos
 - `@return \c true` e `@return \c false` em linhas separadas para bool
 - Usar `\c` para nomes de tipos/variaveis inline
 - Usar `\see` para referencias cruzadas
@@ -378,39 +379,63 @@ switch(getOperationMode())
 
 **Nunca omitir chaves**, mesmo em blocos de uma linha.
 
+**Ordem dos cases:** casos criticos e de seguranca (emergencia, erro fatal) sempre primeiro no switch, seguidos dos casos operacionais em ordem logica, e `default` por ultimo.
+
+```cpp
+// CORRETO — caso critico primeiro
+switch(cmd)
+{
+    case command_e::EMERGENCY_STOP:
+    {
+        emergencyStop();
+        break;
+    }
+    case command_e::SUBIR:
+    {
+        subir();
+        break;
+    }
+    default:
+    {
+        break;
+    }
+}
+```
+
 ---
 
 ## 10. PADRAO PARA FUNCOES QUE RETORNAM BOOL
 
-Sempre declarar variavel local de resultado, manipular, retornar ao final:
+Padrao hibrido: **early return em guard clauses** + **variavel local + unico return na logica principal**.
 
 ```cpp
 bool myManager::checkValidCredentials(void)
 {
-    bool validCredentials = false;
-
+    // GUARD CLAUSES — early return permitido
     if(_dataConfig == nullptr)
     {
-        validCredentials = false;
         e_LOG_MODULE("NullPointerException");
+        return false;
+    }
+
+    // LOGICA PRINCIPAL — variavel local + unico return
+    bool validCredentials = false;
+
+    if(strlen(_dataConfig->credentials.ssid) > NULL)
+    {
+        validCredentials = true;
     }
     else
     {
-        if(strlen(_dataConfig->credentials.ssid) > NULL)
-        {
-            validCredentials = true;
-        }
-        else
-        {
-            validCredentials = checkLoadBackupCredentials();
-        }
+        validCredentials = checkLoadBackupCredentials();
     }
 
     return validCredentials;
 }
 ```
 
-**Nunca** usar `return true;` / `return false;` no meio da funcao — um unico `return` ao final.
+**Early return** e permitido apenas em guard clauses (pre-condicoes: nullptr, parametro invalido, estado impossivel).
+**Nunca** usar `return true;` / `return false;` espalhados na logica principal — variavel local + unico `return` ao final.
 
 ---
 
@@ -662,16 +687,17 @@ typedef struct
 
 ```cpp
 // Comentarios inline em portugues
-// SECOES IMPORTANTES EM MAIUSCULAS
+// SECOES IMPORTANTES EM MAIUSCULAS (separadores de bloco)
 
 // Uso de \c para tipos em Doxygen inline
-// @return \c true SE CONECTADO
-// @return \c false SE DESCONECTADO
+// @return \c true se conectado
+// @return \c false se desconectado
 // @see \c operationMode_e
 ```
 
 - Sempre em **portugues**
-- Doxygen em MAIUSCULAS SEM ACENTOS
+- Doxygen (`@brief`, `@param`, `@return`, `///<`) em sentence case, sem acentos
+- `@warning` em MAIUSCULAS (destaque para alertas criticos)
 - Strings de erro em ingles tecnico: `"NullPointerException"`
 
 ---
@@ -688,13 +714,13 @@ Antes de finalizar qualquer arquivo:
 - [ ] Destrutor chama apenas `checkDelete[X]()` — sem logica direta
 - [ ] Cada ponteiro membro tem sua `checkDelete[X]()` em `protected:`
 - [ ] Brace style Allman (chave na linha seguinte) em **todos** os contextos
-- [ ] `switch/case` com chaves em cada `case`
-- [ ] Funcoes bool retornam variavel local, nao `return true/false` no meio
+- [ ] `switch/case` com chaves em cada `case`, casos criticos primeiro
+- [ ] Funcoes bool: early return em guard clauses + variavel local + unico `return` na logica principal
 - [ ] Membros privados com prefixo `_` e inicializados inline
 - [ ] Constantes de classe com `static constexpr` (nunca `static const` para valores compile-time)
 - [ ] Enums usados com escopo: `operationMode_e::MODE_A`
 - [ ] Structs com inicializacao entre chaves: `= {valor}`
 - [ ] Macros de log em vez de `Serial.print()`
 - [ ] Arquivo `log-[nome].h` com classe `[Nome]Debug` e 5 niveis de macro
-- [ ] Comentarios e `@brief` em portugues, MAIUSCULAS, SEM ACENTOS
+- [ ] Doxygen em portugues, sentence case, sem acentos (`@warning` em MAIUSCULAS)
 - [ ] `(void)` explicito em funcoes sem parametros

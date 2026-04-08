@@ -23,7 +23,7 @@ Componente com ciclo de vida `setup()` + `loop()`.
 /**
  * @file modulo.h
  * @author <AUTHOR_NAME> (<AUTHOR_EMAIL>)
- * @brief BIBLIOTECA PARA [DESCRICAO EM MAIUSCULAS SEM ACENTOS]
+ * @brief Biblioteca para [descricao em sentence case, sem acentos]
  * @version 1.0.0
  * @date DD-MM-YYYY
  * @copyright Copyright (c) YYYY \b <COMPANY_NAME>
@@ -158,7 +158,7 @@ Componente que controla GPIO, PWM, DAC ou shift register.
 /**
  * @file my-driver.h
  * @author <AUTHOR_NAME> (<AUTHOR_EMAIL>)
- * @brief DRIVER PARA CONTROLE DE [HARDWARE EM MAIUSCULAS]
+ * @brief Driver para controle de [hardware em sentence case]
  * @version 1.0.0
  * @date DD-MM-YYYY
  * @copyright Copyright (c) YYYY \b <COMPANY_NAME>
