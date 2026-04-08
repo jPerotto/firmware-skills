@@ -53,11 +53,12 @@ Cada item e verificavel objetivamente — sem julgamento subjetivo.
 - [ ] Responsabilidade unica (SRP) — funcao faz UMA coisa
 - [ ] Tamanho <= 100 linhas (ideal <= 60)
 - [ ] Aninhamento <= 3 niveis
+- [ ] Cadeia `if/else if` termina com `else` final obrigatorio
 - [ ] Max 4 verificacoes `if/else if` em cadeia
 - [ ] Max 5 validacoes no inicio (guard clauses)
 - [ ] Guard clauses na ordem: `nullptr` → parametros → estado → negocio
 - [ ] Fluxo linear: validacoes primeiro, logica depois
-- [ ] Funcoes `bool`: variavel local + unico `return` ao final
+- [ ] Funcoes `bool`: early return em guard clauses + variavel local + unico `return` na logica principal
 - [ ] Comparacoes explicitas: `== false`, `== true`, `== nullptr`
 - [ ] Parenteses em cada sub-expressao: `if((a == b) || (c == d))`
 - [ ] Sem numeros magicos (`constexpr` ou `#define`)
@@ -141,7 +142,7 @@ Cada item e verificavel objetivamente — sem julgamento subjetivo.
 - [ ] Cabecalho Doxygen completo em todo `.h` (`@file`, `@author`, `@brief`, `@version`, `@date`, `@copyright`)
 - [ ] Todo `#include` com `/** @brief ... */` acima
 - [ ] Toda funcao no `.cpp` com `/** @brief ... */`
-- [ ] `@brief` e `@param` em MAIUSCULAS SEM ACENTOS
+- [ ] `@brief` e `@param` em sentence case, sem acentos (`@warning` em MAIUSCULAS)
 - [ ] Funcoes `bool` com dois `@return \c true/false` com condicoes especificas
 - [ ] `@warning` em funcoes criticas (hardware, RF, timers)
 - [ ] Sem documentacao redundante (nome != @brief)

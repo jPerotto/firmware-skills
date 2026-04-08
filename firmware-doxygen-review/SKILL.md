@@ -6,7 +6,7 @@ description: Padrao de documentacao Doxygen/Markdown para firmware embarcado (ES
 # Documentacao — Padrao Doxygen/Markdown para Firmware Embarcado
 
 Padrao de documentacao para projetos firmware ESP8266/ESP32 com PlatformIO.
-Idioma: Portugues brasileiro. Comentarios Doxygen em MAIUSCULAS SEM ACENTOS.
+Idioma: Portugues brasileiro. Doxygen em sentence case, sem acentos. `@warning` em MAIUSCULAS.
 
 **Principio central:** documentacao existe para agregar valor, nao para preencher espaco.
 Se o nome, tipo e contexto ja explicam o elemento, nao documente. Se ha restricao,
@@ -121,7 +121,7 @@ Descricao do proposito da biblioteca.
 - Secao 1 = Dependencias (lista com bullet points e links)
 - Subsecao 1 = Principais recursos (lista de metodos da classe com links)
 - Subsecao 2 = Codigos de exemplos (links para .ino de exemplo)
-- Descricoes de metodos em MAIUSCULAS
+- Descricoes de metodos em sentence case, sem acentos
 - Links para metodos: `[nome](#className::methodName())`
 
 ---
@@ -139,8 +139,8 @@ Todo arquivo `.h` comeca com header guard + bloco Doxygen:
 /**
  * @file filename.h
  * @author <AUTHOR_NAME> (<AUTHOR_EMAIL>)
- * @brief DESCRICAO DO PROPOSITO DO ARQUIVO EM MAIUSCULAS
- *        SEM ACENTOS, PODE OCUPAR MULTIPLAS LINHAS
+ * @brief Descricao do proposito do arquivo em sentence case,
+ *        sem acentos, pode ocupar multiplas linhas
  * @version X.Y.Z
  * @date DD-MM-YYYY
  * @copyright Copyright (c) YYYY \b <COMPANY_NAME>
@@ -214,7 +214,7 @@ class myModule : public myModuleLOG
 ### Regras do header:
 
 - Membros `public` e `protected` NAO precisam de @brief no .h (documentados no .cpp)
-- `@brief` sempre em MAIUSCULAS, sem acentos
+- `@brief` em sentence case, sem acentos
 - Ponteiros inicializados com `= nullptr`
 - Tipos primitivos inicializados com `= {NULL}`, `= {false}`, `= {0}`
 - **Preferir ausencia de documentacao a documentacao redundante**
@@ -311,8 +311,8 @@ bool myModule::executeAction(uint8_t param)
 ### Regras do source file:
 
 - Toda funcao tem `/** @brief ... */` acima
-- `@brief` em MAIUSCULAS, sem acentos
-- `@param` em MAIUSCULAS: `@param nomeParam DESCRICAO DO PARAMETRO`
+- `@brief` em sentence case, sem acentos
+- `@param` em sentence case: `@param nomeParam Descricao do parametro`
 - `@return` usa `\c true` / `\c false` (com `\c` para monospace)
 - Funcoes bool tem DOIS `@return`: um para true, outro para false
 - Formato do @return: `@return \c true SE [CONDICAO]` / `@return \c false SE [CONDICAO]`
@@ -911,11 +911,11 @@ Para cada elemento, emitir um dos vereditos:
 | Regra | Aplicacao |
 |-------|-----------|
 | Idioma | Portugues brasileiro |
-| Case dos comentarios | MAIUSCULAS sem acentos |
+| Case dos comentarios | Sentence case, sem acentos (`@warning` em MAIUSCULAS) |
 | Formato de data | DD-MM-YYYY |
 | @brief no .h | Apenas para membros private NAO obvios |
 | @brief no .cpp | Para TODA funcao |
-| @param | MAIUSCULAS, sem acentos, apenas se agrega valor |
+| @param | Sentence case, sem acentos, apenas se agrega valor |
 | @return bool | Dois @return separados (true/false) com `\c` |
 | Enum/struct campos | `///<` inline obrigatorio em todos os membros, nunca `@param` |
 | Variaveis globais | Agrupar relacionadas, documentar individualmente apenas criticas |
@@ -947,7 +947,7 @@ Para cada elemento, emitir um dos vereditos:
 - [ ] Toda funcao com `/** @brief ... */`
 - [ ] Construtores com `@param` para cada parametro
 - [ ] Funcoes bool com dois `@return \c true/false` com condicoes especificas
-- [ ] `@brief` e `@param` em MAIUSCULAS sem acentos
+- [ ] `@brief` e `@param` em sentence case, sem acentos
 
 ### Revisao de qualidade:
 - [ ] Nenhuma documentacao repete o nome da funcao, variavel ou parametro
@@ -956,5 +956,5 @@ Para cada elemento, emitir um dos vereditos:
 - [ ] Funcoes criticas (hardware, RF, comunicacao) tem `@warning`
 - [ ] Funcoes simples NAO tem excesso de tags (@details, @pre, @post)
 - [ ] Todo `@return` descreve condicoes especificas, nao generico
-- [ ] Texto em PORTUGUES, MAIUSCULAS, SEM ACENTOS
+- [ ] Texto em portugues, sentence case, sem acentos (`@warning` em MAIUSCULAS)
 - [ ] Documentacao proporcional a criticidade — nem mais, nem menos

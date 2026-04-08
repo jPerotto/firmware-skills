@@ -211,7 +211,42 @@ bool processData(processParams_t* params)
 
 ---
 
-## 6. LIMITE DE IF/ELSE IF — MAXIMO 4 VERIFICACOES
+## 6. CADEIAS IF/ELSE IF — REGRAS
+
+### 6.1 Else final obrigatorio
+
+Toda cadeia `if` / `else if` deve terminar com um `else` final.
+Isso garante que todos os caminhos sao tratados explicitamente — evita
+falhas silenciosas onde nenhuma condicao e atendida.
+
+```cpp
+// CORRETO — else final explicito
+if(limpa == true)
+{
+    result = command_e::LIMPA_BICO;
+}
+else if(sobe == true)
+{
+    result = command_e::SUBIR;
+}
+else
+{
+    result = command_e::IDLE;
+}
+
+// INCORRETO — sem else final
+if(limpa == true)
+{
+    result = command_e::LIMPA_BICO;
+}
+else if(sobe == true)
+{
+    result = command_e::SUBIR;
+}
+// e se nenhum for true? falha silenciosa
+```
+
+### 6.2 Maximo 4 verificacoes
 
 Cadeias longas de `if/else if` devem ser convertidas em `switch/case`,
 tabela de decisao ou funcoes separadas.
@@ -317,75 +352,92 @@ bool processAndSave(data_t* data)
 
 ---
 
-## 8. RETORNO DE FUNCOES BOOL — VARIAVEL LOCAL + UNICO RETURN
+## 8. RETORNO DE FUNCOES — EARLY RETURN EM GUARD CLAUSES
 
-Todas as funcoes que retornam `bool` devem:
-1. Declarar variavel local de resultado inicializada com `false`
-2. Manipular a variavel ao longo da funcao
-3. Retornar a variavel no final — **unico ponto de retorno**
+Padrao hibrido baseado em MISRA (Advisory 15.5), CERT C e IEC 61508:
+
+- **Guard clauses** (pre-condicoes) usam **early return** — falhar rapido antes de tocar em estado
+- **Logica principal** usa **variavel local + unico return ao final**
+
+A funcao tem duas secoes claras:
+1. SECAO DE GUARD CLAUSES — early return para condicoes que impedem execucao
+2. SECAO DE LOGICA — variavel local + unico return
+
+### Funcoes bool
 
 ```cpp
-// CORRETO — padrao do codebase
+// CORRETO — guard clauses com early return + logica com variavel local
 bool backupSystem::begin(uint32_t size)
 {
-    bool statusBegin = false;
-
+    // GUARD CLAUSES — pre-condicoes
     if(_backup == nullptr)
     {
-        statusBegin = false;
         e_LOG_DATA("NullPointerException");
+        return false;
+    }
+
+    // LOGICA PRINCIPAL — variavel local + unico return
+    bool statusBegin = false;
+
+    if(_backup->begin(size) == false)
+    {
+        statusBegin = false;
+        e_LOG_DATA("failed to initialise backup");
     }
     else
     {
-        if(_backup->begin(size) == false)
-        {
-            statusBegin = false;
-            e_LOG_DATA("failed to initialise backup");
-        }
-        else
-        {
-            statusBegin = true;
-            i_LOG_DATA("Backup start sucess");
-        }
+        statusBegin = true;
+        i_LOG_DATA("Backup start sucess");
     }
 
     return statusBegin;
 }
 
-// INCORRETO — multiplos return no meio da funcao
+// INCORRETO — return espalhados na logica principal (nao sao guard clauses)
 bool backupSystem::begin(uint32_t size)
 {
     if(_backup == nullptr)
     {
-        return false;  // return no meio
+        return false;
     }
 
     if(_backup->begin(size) == false)
     {
-        return false;  // outro return no meio
+        return false;  // ERRADO — isso e logica, nao guard clause
     }
 
-    return true;  // terceiro return
+    return true;
 }
 ```
 
-**Excecao:** early return e permitido APENAS em guard clauses de `nullptr`
-quando a funcao **nao pode continuar de forma alguma** e nao retorna `bool`:
+### Funcoes void
 
 ```cpp
-// EXCECAO PERMITIDA — void com nullptr critico
+// CORRETO — early return em guard clause de nullptr
 void myModule::setup(void)
 {
     if(_dep == nullptr)
     {
         e_LOG_MODULE("NullPointerException");
-        return;  // permitido — nao ha como continuar
+        return;
     }
 
-    // logica principal
     setupInternal();
 }
 ```
+
+### O que e guard clause vs logica
+
+| Tipo | Descricao | Early return |
+|------|-----------|-------------|
+| Guard clause | Validacao de pre-condicao (nullptr, parametro invalido, estado impossivel) | PERMITIDO |
+| Logica principal | Processamento, decisoes de negocio, resultados | PROIBIDO — usar variavel local |
+
+Justificativa tecnica (IEC 61508, ISO 26262, CERT C):
+- Fail fast evita execucao com estado invalido (hard fault, watchdog reset)
+- Reduz complexidade ciclomatica e aninhamento
+- Guard clauses isoladas facilitam cobertura MC/DC
+- Libera stack frame mais cedo em caminhos de erro
 
 ---
 
@@ -591,11 +643,12 @@ Antes de finalizar qualquer funcao:
 - [ ] Funcao tem responsabilidade unica (SRP)
 - [ ] Tamanho <= 100 linhas (ideal <= 60)
 - [ ] Aninhamento <= 3 niveis
+- [ ] Cadeia if/else if termina com `else` final obrigatorio
 - [ ] Max 4 verificacoes if/else if em cadeia
 - [ ] Max 5 validacoes no inicio (guard clauses)
 - [ ] Guard clauses na ordem: nullptr → params → estado → negocio
 - [ ] Fluxo linear: validacoes primeiro, logica depois
-- [ ] Funcoes bool: variavel local + unico `return` ao final
+- [ ] Funcoes bool: early return em guard clauses + variavel local + unico `return` na logica principal
 - [ ] Comparacoes explicitas: `== false`, `== true`, `== nullptr`
 - [ ] Parenteses em cada sub-expressao condicional
 - [ ] Sem numeros magicos (constexpr ou #define)
