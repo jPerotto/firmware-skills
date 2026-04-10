@@ -515,7 +515,148 @@ bool executeCommand(DynamicJsonDocument& jsonDoc)
 
 ---
 
-## 5. FIRMWARE COMPLETO — ESQUELETO
+## 5. TASK FREERTOS
+
+Componente que executa em task separada do FreeRTOS. **Regra: cada task tem seu proprio arquivo `.ino` ou `.cpp` contendo apenas a funcao da task — nenhuma outra funcao no mesmo arquivo.**
+
+### taskExemplo.ino
+
+```cpp
+#include "principais.h"
+
+/**
+ * @brief Task dedicada a [descricao da responsabilidade]
+ *
+ * [Detalhes sobre o que a task faz, prioridade, e comportamento de bloqueio]
+ */
+void taskExemplo(void *pvParameters)
+{
+    activeWatchDog();
+
+    do
+    {
+        resetWatchDog();
+
+        // Logica da task — chamar funcoes de outros arquivos
+        // Nunca implementar logica de negocio aqui dentro
+
+        taskYIELD();
+    } while (RUN_TASK);
+}
+```
+
+Regras:
+- **Um arquivo por task** — `taskExecute.ino`, `taskLoRa.ino`, etc.
+- **Apenas a funcao da task** no arquivo — funcoes auxiliares ficam em outros arquivos
+- Sempre chamar `activeWatchDog()` no inicio e `resetWatchDog()` a cada iteracao
+- Sempre terminar com `taskYIELD()`
+- Usar `do { ... } while (RUN_TASK)` para loop infinito
+- Prioridade maior = preempta tasks de menor prioridade no mesmo core
+
+### Inicializacao em device.ino
+
+```cpp
+void setupTasks(void)
+{
+    xTaskCreatePinnedToCore(taskExemplo, "taskExemplo", TASK_STACK_SIZE, NULL, TASK_PRIORITY, NULL, PRO_CPU_NUM);
+}
+```
+
+---
+
+## 5.1 TOGGLE COMMAND
+
+Padrao para comandos que alternam estado (liga/desliga) com deteccao de borda — evita re-disparo enquanto o botao esta segurado.
+
+### Funcao de deteccao de borda
+
+```cpp
+/**
+ * @brief Verifica se um comando toggle deve ser emitido por deteccao de borda
+ * @param isActive Estado atual da entrada (true se pressionado)
+ * @param lastActive Referencia ao ultimo estado registrado
+ * @param toggleCommand Comando a emitir na borda de subida
+ * @return \c command_e com o comando toggle ou \c command_e::IDLE
+ */
+command_e checkToggleCommand(bool isActive, bool &lastActive, command_e toggleCommand)
+{
+    command_e result = command_e::IDLE;
+
+    if (isActive == true)
+    {
+        if (lastActive == false)
+        {
+            result = toggleCommand;
+        }
+    }
+
+    lastActive = isActive;
+    return result;
+}
+```
+
+### Identificacao de comandos toggle
+
+```cpp
+/**
+ * @brief Verifica se o comando possui comportamento de toggle no actuatorManager
+ * @param command Comando a verificar
+ * @return \c true se o comando alterna estado interno ao ser executado
+ * @return \c false se o comando e continuo ou momentaneo
+ */
+bool isToggleCommand(command_e command)
+{
+    bool toggle = false;
+
+    if ((command == command_e::LAMPADA) || (command == command_e::LIMPA_BICO))
+    {
+        toggle = true;
+    }
+
+    return toggle;
+}
+```
+
+### Consumo apos execucao
+
+Comandos toggle devem ser **consumidos** apos processamento para evitar que loops de execucao re-disparem o toggle:
+
+```cpp
+// Apos processar o comando via commandManager
+if (isToggleCommand(managePrinter.currentCommand) == true)
+{
+    remoteCommand.cmd = command_e::IDLE;
+    remoteCommand.isActive = false;
+}
+```
+
+**Sem este consumo**, o comando persiste no `remoteCommand` e o `actuatorManager.execute()` inverte o estado a cada iteracao da task.
+
+### Uso com multiplas fontes
+
+```cpp
+static bool lastToggleLampada = false;
+static bool lastToggleLimpaBico = false;
+
+command_e toggleResult = checkToggleCommand(
+    data.buttons == controllerButtons_e::BUTTON_REFLECTOR,
+    lastToggleLampada,
+    command_e::LAMPADA);
+
+if (toggleResult != command_e::IDLE)
+{
+    return toggleResult;
+}
+```
+
+Regras:
+- Cada fonte de toggle tem sua propria variavel `lastToggle[Nome]`
+- `checkToggleCommand` atualiza `lastActive` sempre (inclusive no release)
+- O consumo via `isToggleCommand` impede re-execucao em loops persistentes
+
+---
+
+## 6. FIRMWARE COMPLETO — ESQUELETO
 
 Estrutura minima de um novo projeto de firmware.
 
@@ -733,5 +874,7 @@ bool executeCommand(DynamicJsonDocument& jsonDoc);
 | Controle de GPIO, PWM, DAC | **Driver de Hardware** |
 | Componente com estados discretos | **State Machine** |
 | Processar comandos JSON do MQTT | **Command Handler** |
+| Execucao concorrente com FreeRTOS | **Task FreeRTOS** |
+| Comando liga/desliga com deteccao de borda | **Toggle Command** |
 | Novo projeto de firmware completo | **Firmware Completo** |
 | Nova biblioteca reutilizavel | Usar skill `firmware-new-library` |

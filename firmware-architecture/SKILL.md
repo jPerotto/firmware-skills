@@ -263,6 +263,50 @@ Regras:
 
 ---
 
+## 8.1 TASKS FREERTOS (ESP32)
+
+Para projetos ESP32 com concorrencia real, usar FreeRTOS tasks no lugar de Ticker.
+
+### Organizacao de arquivos
+
+**Regra: uma task por arquivo.** O arquivo contem apenas a funcao da task — funcoes auxiliares ficam em outros arquivos.
+
+```
+taskExecute.ino    → void taskExecute(void*)   // Controle principal
+taskLoRa.ino       → void taskLoRa(void*)      // Comunicacao LoRa
+taskSensor.ino     → void taskSensor(void*)    // Leitura de sensores
+```
+
+### Separacao de responsabilidades entre cores
+
+| Core | Responsabilidade | Exemplo |
+|------|-----------------|---------|
+| APP_CPU (core 1) | WiFi, MQTT, loop() do Arduino | Comunicacao de rede |
+| PRO_CPU (core 0) | Tasks de controle e I/O | Leitura de sensores, acionamento |
+
+### Comunicacao entre tasks
+
+- **Queue** (`xQueueCreate`) para dados entre tasks/cores — unico mecanismo seguro
+- **xQueueOverwrite** em filas de 1 item quando so importa o valor mais recente
+- Variaveis globais compartilhadas entre cores requerem `portMUX_TYPE` spinlock
+
+### Prioridade e preempcao
+
+```
+Prioridade 2: taskExecute  — leitura de botoes, arbitragem (nao-bloqueante)
+Prioridade 1: taskLoRa     — transmissao bloqueante (preemptada por prio 2)
+```
+
+Tasks de maior prioridade no mesmo core preemptam as de menor. Usar prioridade mais alta para tasks que nao podem ser bloqueadas (leitura de entrada, seguranca).
+
+### Comandos toggle em loops de task
+
+Comandos que alternam estado (liga/desliga) devem ser **consumidos apos execucao**. Sem consumo, o comando persiste no estado global e o actuator re-executa a cada iteracao, causando oscilacao.
+
+Usar `isToggleCommand()` + consumo do `remoteCommand` apos processamento. Ver template `Toggle Command` em `firmware-templates`.
+
+---
+
 ## 9. ARQUITETURA DUAL-BROKER MQTT
 
 Quando o projeto requer separacao entre comandos/controle e telemetria/logs:

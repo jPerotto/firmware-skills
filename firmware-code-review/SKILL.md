@@ -135,6 +135,16 @@ Cada item e verificavel objetivamente — sem julgamento subjetivo.
 - [ ] `principals.h` com todos os `#include` documentados
 - [ ] `prototypes.h` com prototipos de funcoes cross-file
 
+### Tasks FreeRTOS (ESP32)
+
+- [ ] Uma task por arquivo — arquivo contem apenas a funcao da task
+- [ ] Funcoes auxiliares em arquivos separados (nunca dentro do arquivo da task)
+- [ ] `activeWatchDog()` no inicio, `resetWatchDog()` a cada iteracao
+- [ ] Comunicacao entre tasks/cores via Queue (nunca variaveis globais desprotegidas)
+- [ ] Prioridade maior para tasks que nao podem bloquear (input, seguranca)
+- [ ] Comandos toggle consumidos apos execucao (`isToggleCommand` + reset `remoteCommand`)
+- [ ] `xQueueOverwrite` para filas de 1 item onde so importa o valor mais recente
+
 ---
 
 ## 8. DOCUMENTACAO (firmware-doxygen-review)

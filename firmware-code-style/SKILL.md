@@ -187,13 +187,30 @@ private:
 ```
 
 Regras:
-- Prefixo `_` (underscore) em **todos** os membros privados
+- Prefixo `_` (underscore) em **todos** os membros privados e protected
 - camelCase apos o underscore: `_wifiDriver`, `_operationMode`
 - Ponteiros sempre inicializados com `= nullptr`
 - Enums inicializados com escopo: `operationMode_e::UNDEFINED`
 - Tipos numericos inicializados com `NULL` (padrao do codebase — nao alterar para `0`)
 - Booleanos inicializados com `false`
 - Constantes de classe: sempre `static constexpr` — **nunca** `static const` para valores conhecidos em tempo de compilacao
+
+**O prefixo `_` e exclusivo para membros de classe (private/protected).** Variaveis globais e locais de funcao usam `camelCase` sem prefixo. Isso garante que ao ver `_variavel` no codigo, o leitor sabe imediatamente que e um membro interno de classe.
+
+```cpp
+// CORRETO — prefixo apenas em membros de classe
+class myManager
+{
+  private:
+    uint8_t _counter = NULL;           // membro privado — com prefixo
+};
+
+inputManager inputManager;             // variavel global — sem prefixo
+command_e localCommand = command_e::IDLE; // variavel local — sem prefixo
+
+// ERRADO — prefixo em variavel global
+inputManager _inputManager;            // parece membro privado, mas e global
+```
 
 ```cpp
 // CORRETO
@@ -670,16 +687,34 @@ typedef struct
 
 | Item | Convencao | Exemplo |
 |------|-----------|---------|
-| Classes | PascalCase | `wifiManager`, `dataHandler` |
+| Classes | camelCase | `wifiManager`, `dataHandler` |
 | Metodos publicos | camelCase, verbo + substantivo | `setup()`, `loop()`, `enablePortal()` |
 | Metodos protected | prefixo funcional + camelCase | `checkDeleteDriver()`, `setupMode()`, `getMode()` |
-| Membros privados | `_camelCase` | `_driver`, `_operationMode` |
+| Membros privados/protected | `_camelCase` | `_driver`, `_operationMode` |
+| Variaveis globais | `camelCase` sem prefixo | `inputManager`, `remoteCommand` |
+| Variaveis locais | `camelCase` sem prefixo | `localCommand`, `resultado` |
 | Enums (tipo) | `camelCase_e` | `operationMode_e`, `statusConnect_e` |
 | Enum (membros) | `UPPER_SNAKE_CASE` | `MODE_CONNECT`, `STA_DISCONNECTED` |
 | Structs (tipo) | `camelCase_t` | `controlConnect_t`, `dataConfig_t` |
 | Struct (membros) | `camelCase` | `statusConnect`, `timeStartConnect` |
 | Defines/macros | `UPPER_SNAKE_CASE` | `TIME_RECONNECT`, `N_MAX_RETRIES` |
 | Arquivos | `kebab-case` | `wifi-manager.h`, `log-wifi.h` |
+
+**Regra de abreviacoes:** nomes de variaveis, classes e funcoes devem usar **palavras completas** — nunca abreviar. Clareza e mais importante que economia de caracteres.
+
+```cpp
+// CORRETO — palavras completas
+commandManager commandManager;
+systemCommand_t remoteCommand;
+command_e localCommand;
+void processCommandPrinter(void);
+
+// ERRADO — abreviacoes
+commandManager cmdMgr;
+systemCommand_t remoteCmd;
+command_e localCmd;
+void procCmdPrinter(void);
+```
 
 ---
 
@@ -716,7 +751,9 @@ Antes de finalizar qualquer arquivo:
 - [ ] Brace style Allman (chave na linha seguinte) em **todos** os contextos
 - [ ] `switch/case` com chaves em cada `case`, casos criticos primeiro
 - [ ] Funcoes bool: early return em guard clauses + variavel local + unico `return` na logica principal
-- [ ] Membros privados com prefixo `_` e inicializados inline
+- [ ] Membros privados/protected com prefixo `_` e inicializados inline
+- [ ] Variaveis globais e locais sem prefixo `_` (reservado para membros de classe)
+- [ ] Nomes sem abreviacoes — palavras completas
 - [ ] Constantes de classe com `static constexpr` (nunca `static const` para valores compile-time)
 - [ ] Enums usados com escopo: `operationMode_e::MODE_A`
 - [ ] Structs com inicializacao entre chaves: `= {valor}`
